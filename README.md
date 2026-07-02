@@ -50,10 +50,7 @@ requires the expected fields — so nobody can dump or spam your whole DB:
       "$code": {
         ".read": true,
         ".write": true,
-        ".validate": "newData.hasChildren(['host','status']) || !newData.exists()",
-        "players": {
-          ".validate": "newData.numChildren() <= 6"
-        }
+        ".validate": "newData.hasChildren(['host','status']) || !newData.exists()"
       }
     },
     ".read": false,
@@ -61,6 +58,9 @@ requires the expected fields — so nobody can dump or spam your whole DB:
   }
 }
 ```
+
+(Room size is capped at 6 by the app itself, so we don't enforce it in the
+rules — that keeps the ruleset simple and avoids validator quirks.)
 
 This is a friendly-game level of security (no login, anyone with a room code
 can play). If you later want only signed-in friends, add Firebase Anonymous or

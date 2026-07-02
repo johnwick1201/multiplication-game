@@ -306,6 +306,7 @@ function beginPlay(s) {
   $("finish-banner").hidden = true;
   renderQuestion();
   $("answer").disabled = false;
+  $("submit-answer").disabled = false;
   $("answer").value = "";
   $("answer").focus();
 
@@ -334,12 +335,14 @@ function renderQuestion() {
   $("q-b").textContent = q.b;
 }
 
-// answer submission — no correct/wrong feedback during play (shown in results)
-$("answer").addEventListener("keydown", e => {
-  if (e.key !== "Enter") return;
+// answer submission — the form fires on Submit-button tap AND desktop Enter,
+// so mobile number keypads (which have no return key) work fine.
+// No correct/wrong feedback during play; it's shown in the results.
+$("answer-form").addEventListener("submit", e => {
+  e.preventDefault();
   if (phase !== "playing") return;         // locked once finished
   const val = $("answer").value.trim();
-  if (val === "") return;
+  if (val === "") { $("answer").focus(); return; }
   const q = questions[qIndex];
   const right = +val === q.a * q.b;
 
@@ -347,6 +350,7 @@ $("answer").addEventListener("keydown", e => {
   attempted++;
   if (right) correct++;
   $("answer").value = "";
+  $("answer").focus();                     // keep the mobile keyboard open
 
   qIndex++;
   // questions-mode end condition
@@ -364,6 +368,7 @@ async function finishRound() {
 
   // lock all further input and show a big, clear "finished" banner
   $("answer").disabled = true;
+  $("submit-answer").disabled = true;
   $("answer").blur();
   $("play-area").hidden = true;
   $("finish-big").textContent = currentSettings.mode === "time" ? "⏱ Time's up!" : "✓ All done!";

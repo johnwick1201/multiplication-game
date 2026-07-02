@@ -141,7 +141,9 @@ legend { padding: 0 8px; color: var(--muted); }
   letter-spacing: 2px;
   white-space: nowrap;
 }
-.answer-input { font-size: 3.2rem; text-align: center; padding: 24px; }
+.answer-form { display: flex; gap: 12px; align-items: stretch; }
+.answer-input { font-size: 3.2rem; text-align: center; padding: 24px; flex: 1; margin-top: 0; }
+.submit-btn { flex: 0 0 auto; font-size: 1.3rem; padding: 0 26px; }
 /* remove number spinner arrows */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -197,7 +199,9 @@ kbd { background: var(--panel); border: 1px solid var(--border); border-radius: 
   .wrap { padding: 20px 16px; }
   h1 { font-size: 1.9rem; }
   .question { font-size: 4rem; letter-spacing: 1px; margin: 30px 0; }
+  .answer-form { flex-direction: column; }
   .answer-input { font-size: 2.2rem; padding: 16px; }
+  .submit-btn { padding: 16px; font-size: 1.2rem; }
   .hud-item span:last-child { font-size: 1.5rem; }
   .countdown { font-size: 6rem; }
   .finish-big { font-size: 3rem; }
@@ -206,11 +210,9 @@ kbd { background: var(--panel); border: 1px solid var(--border); border-radius: 
   .qtable th, .qtable td { padding: 7px 6px; font-size: .92rem; }
 }
 
-.foot { padding: 20px; font-size: .8rem; }
-
 .credit {
   position: fixed;
-  bottom: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   right: 16px;
   font-size: 1.17rem;
   font-style: italic;

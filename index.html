@@ -99,8 +99,12 @@
           <span id="q-a">7</span> × <span id="q-b">8</span> =
         </div>
 
-        <input id="answer" type="number" inputmode="numeric" class="answer-input" autocomplete="off" />
-        <p class="hint">Type your answer and press <kbd>Enter</kbd>.</p>
+        <form id="answer-form" class="answer-form" autocomplete="off">
+          <input id="answer" type="number" inputmode="numeric" enterkeyhint="go"
+                 class="answer-input" autocomplete="off" />
+          <button type="submit" id="submit-answer" class="primary submit-btn">Submit</button>
+        </form>
+        <p class="hint">Type your answer, then tap <strong>Submit</strong> (or press <kbd>Enter</kbd> on a keyboard).</p>
       </div>
 
       <div id="finish-banner" class="finish-banner" hidden>
@@ -122,7 +126,6 @@
 
   </main>
 
-  <footer class="foot">Multiplication Game · runs on Firebase</footer>
   <div class="credit">Website credit to Dr. Enirehtak</div>
 
   <script type="module" src="app.js"></script>
