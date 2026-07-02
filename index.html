@@ -20,10 +20,14 @@
       </label>
 
       <div class="row">
-        <button id="btn-create" class="primary">Create a game</button>
+        <button id="btn-solo" class="primary">Play solo</button>
       </div>
 
-      <div class="divider"><span>or join one</span></div>
+      <div class="divider"><span>or play with friends</span></div>
+
+      <div class="row">
+        <button id="btn-create">Create a game</button>
+      </div>
 
       <div class="row">
         <input id="join-code" type="text" maxlength="4" placeholder="CODE" class="code-input" autocomplete="off" />
@@ -31,6 +35,39 @@
       </div>
 
       <p id="home-error" class="error"></p>
+    </section>
+
+    <!-- ── SOLO SETUP ──────────────────────────────────────── -->
+    <section id="screen-solo" class="screen">
+      <h2>Solo practice</h2>
+
+      <fieldset>
+        <legend>Game settings</legend>
+        <div class="setting">
+          <span>Max for A</span>
+          <input id="s-maxA" type="number" min="1" max="20" value="12" />
+        </div>
+        <div class="setting">
+          <span>Max for B</span>
+          <input id="s-maxB" type="number" min="1" max="20" value="12" />
+        </div>
+        <div class="setting">
+          <span>Mode</span>
+          <select id="s-mode">
+            <option value="time">Timed</option>
+            <option value="questions">Question limit</option>
+          </select>
+        </div>
+        <div class="setting">
+          <span id="s-limit-label">Seconds</span>
+          <input id="s-limit" type="number" min="5" max="600" value="60" />
+        </div>
+      </fieldset>
+
+      <div class="row">
+        <button id="btn-solo-start" class="primary">Start</button>
+      </div>
+      <button id="btn-solo-back" class="link">Back</button>
     </section>
 
     <!-- ── LOBBY ───────────────────────────────────────────── -->

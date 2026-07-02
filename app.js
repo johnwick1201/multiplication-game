@@ -35,6 +35,7 @@ const me = {
   name: "",
   code: null,
   isHost: false,
+  solo: false,
 };
 let roomRef = null;
 let unsubRoom = null;
@@ -134,6 +135,30 @@ $("btn-join").onclick = async () => {
 };
 
 function err(msg) { $("home-error").textContent = msg; }
+
+// ── SOLO MODE ────────────────────────────────────────────────
+$("btn-solo").onclick = () => {
+  me.name = $("home-name").value.trim() || "You";
+  show("solo");
+};
+$("btn-solo-back").onclick = () => goHome();
+$("s-mode").onchange = () => {
+  $("s-limit-label").textContent = $("s-mode").value === "time" ? "Seconds" : "# Questions";
+};
+$("btn-solo-start").onclick = () => startSolo();
+
+function startSolo() {
+  me.solo = true;
+  const settings = {
+    maxA:  clamp(+$("s-maxA").value, 1, 20),
+    maxB:  clamp(+$("s-maxB").value, 1, 20),
+    mode:  $("s-mode").value,
+    limit: clamp(+$("s-limit").value, 5, 600),
+  };
+  const seed = Math.floor(Math.random() * 2 ** 31);
+  // same engine as multiplayer, just with a locally-built round (no Firebase)
+  startRound({ settings, seed, startAt: serverNow() });
+}
 
 // ── Enter a room: attach the live listener ───────────────────
 function enterRoom(code) {
@@ -374,10 +399,15 @@ async function finishRound() {
   $("finish-big").textContent = currentSettings.mode === "time" ? "⏱ Time's up!" : "✓ All done!";
   $("finish-banner").hidden = false;
 
-  await update(ref(db, `rooms/${me.code}/players/${me.id}`), {
-    done: true,
-    stats: { correct, attempted, timeMs, answers },
-  });
+  const stats = { correct, attempted, timeMs, answers };
+
+  // Solo: no room to write to — show results immediately.
+  if (me.solo) {
+    showResults({ [me.id]: { name: me.name, stats } }, [me.id], currentSettings);
+    return;
+  }
+
+  await update(ref(db, `rooms/${me.code}/players/${me.id}`), { done: true, stats });
   // showResults will fire from the room listener once both are done
 }
 
@@ -386,6 +416,7 @@ function showResults(players, ids, settings) {
   phase = "results";
   show("results");
   setHostVisibility();
+  if (me.solo) $("btn-again").classList.remove("hidden");   // solo can always replay
 
   const rows = ids.map(id => ({ id, name: players[id].name, ...players[id].stats }))
                   .filter(r => r.correct !== undefined);
@@ -449,11 +480,12 @@ function showResults(players, ids, settings) {
 
   $("results-table").innerHTML = cards + breakdown;
   $("results-status").textContent =
-    rows.length < 2 ? "Waiting for your opponent to finish…" : "";
+    (!me.solo && rows.length < 2) ? "Waiting for your opponent to finish…" : "";
 }
 
 // host: play again → back to lobby, cleared
 $("btn-again").onclick = async () => {
+  if (me.solo) { show("solo"); return; }   // solo: back to solo setup to tweak/replay
   if (!me.isHost) return;
   const snap = await get(ref(db, `rooms/${me.code}/players`));
   const upd = { status: "waiting", seed: null, startAt: null };
@@ -483,7 +515,7 @@ async function leaveAndHome() {
 function goHome(message) {
   if (unsubRoom) { unsubRoom(); unsubRoom = null; }
   if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
-  me.code = null; me.isHost = false;
+  me.code = null; me.isHost = false; me.solo = false;
   phase = "home";
   $("home-error").textContent = message || "";
   $("join-code").value = "";

@@ -75,6 +75,7 @@ button:active:not(:disabled) { transform: translateY(1px); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.primary { background: var(--accent); color: #0b0f14; border-color: var(--accent); font-weight: 600; flex: 1; }
 button.link { background: none; border: none; color: var(--muted); text-decoration: underline; padding: 8px; }
+button#btn-solo { flex: 1; }
 button#btn-ready { flex: 1; font-weight: 600; }
 button#btn-ready.ready-on { background: var(--good); color: #06210c; border-color: var(--good); }
 
