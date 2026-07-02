@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multiplication Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+
+    <!-- ── HOME ────────────────────────────────────────────── -->
+    <section id="screen-home" class="screen active">
+      <h1>Multiplication&nbsp;Game</h1>
+      <p class="tagline">Race your friends through the times tables.</p>
+
+      <label class="field">
+        Your name
+        <input id="home-name" type="text" maxlength="16" placeholder="e.g. Kat" autocomplete="off" />
+      </label>
+
+      <div class="row">
+        <button id="btn-create" class="primary">Create a game</button>
+      </div>
+
+      <div class="divider"><span>or join one</span></div>
+
+      <div class="row">
+        <input id="join-code" type="text" maxlength="4" placeholder="CODE" class="code-input" autocomplete="off" />
+        <button id="btn-join">Join</button>
+      </div>
+
+      <p id="home-error" class="error"></p>
+    </section>
+
+    <!-- ── LOBBY ───────────────────────────────────────────── -->
+    <section id="screen-lobby" class="screen">
+      <h2>Room <span id="lobby-code" class="code-badge"></span></h2>
+      <p class="hint">Share the code above with your friend.</p>
+
+      <div class="players" id="lobby-players"></div>
+
+      <fieldset id="settings-box">
+        <legend>Game settings</legend>
+
+        <div class="setting">
+          <span>Max for A</span>
+          <input id="set-maxA" type="number" min="1" max="20" value="12" />
+        </div>
+        <div class="setting">
+          <span>Max for B</span>
+          <input id="set-maxB" type="number" min="1" max="20" value="12" />
+        </div>
+
+        <div class="setting">
+          <span>Players</span>
+          <input id="set-players" type="number" min="2" max="6" value="2" />
+        </div>
+
+        <div class="setting">
+          <span>Mode</span>
+          <select id="set-mode">
+            <option value="time">Timed</option>
+            <option value="questions">Question limit</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <span id="limit-label">Seconds</span>
+          <input id="set-limit" type="number" min="5" max="600" value="60" />
+        </div>
+        <p class="hint host-only">Only the host can change settings.</p>
+      </fieldset>
+
+      <div class="ready-summary" id="ready-summary"></div>
+
+      <div class="row">
+        <button id="btn-ready">I'm ready</button>
+        <button id="btn-start" class="primary host-only" disabled>Start game</button>
+      </div>
+      <p id="lobby-status" class="hint"></p>
+      <button id="btn-leave" class="link">Leave room</button>
+    </section>
+
+    <!-- ── COUNTDOWN ───────────────────────────────────────── -->
+    <section id="screen-countdown" class="screen">
+      <div id="countdown-num" class="countdown">3</div>
+    </section>
+
+    <!-- ── PLAY ────────────────────────────────────────────── -->
+    <section id="screen-play" class="screen">
+      <div class="hud">
+        <div class="hud-item"><span class="hud-label" id="hud-time-label">Time</span><span id="hud-time">–</span></div>
+        <div class="hud-item"><span class="hud-label" id="hud-progress-label">Question</span><span id="hud-progress">–</span></div>
+      </div>
+
+      <div id="play-area">
+        <div class="question" id="question">
+          <span id="q-a">7</span> × <span id="q-b">8</span> =
+        </div>
+
+        <input id="answer" type="number" inputmode="numeric" class="answer-input" autocomplete="off" />
+        <p class="hint">Type your answer and press <kbd>Enter</kbd>.</p>
+      </div>
+
+      <div id="finish-banner" class="finish-banner" hidden>
+        <div class="finish-big" id="finish-big">Finished!</div>
+        <div class="finish-sub" id="finish-sub">Waiting for your opponent…</div>
+      </div>
+    </section>
+
+    <!-- ── RESULTS ─────────────────────────────────────────── -->
+    <section id="screen-results" class="screen">
+      <h2 id="results-title">Results</h2>
+      <div id="results-table" class="results"></div>
+      <div class="row">
+        <button id="btn-again" class="primary host-only">Play again</button>
+        <button id="btn-home" class="link">Back to home</button>
+      </div>
+      <p id="results-status" class="hint"></p>
+    </section>
+
+  </main>
+
+  <footer class="foot">Multiplication Game · runs on Firebase</footer>
+  <div class="credit">Website credit to Dr. Enirehtak</div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
