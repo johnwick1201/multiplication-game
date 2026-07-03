@@ -143,22 +143,17 @@ $("btn-solo").onclick = () => {
 };
 $("btn-solo-back").onclick = () => goHome();
 $("s-mode").onchange = () => {
-  const isQ = $("s-mode").value === "questions";
-  $("s-limit-label").textContent = isQ ? "# Questions" : "Seconds";
-  $("s-worksheet").disabled = !isQ;
-  if (!isQ) $("s-worksheet").checked = false;
+  $("s-limit-label").textContent = $("s-mode").value === "time" ? "Seconds" : "# Questions";
 };
 $("btn-solo-start").onclick = () => startSolo();
 
 function startSolo() {
   me.solo = true;
-  const isQ = $("s-mode").value === "questions";
   const settings = {
     maxA:  clamp(+$("s-maxA").value, 1, 20),
     maxB:  clamp(+$("s-maxB").value, 1, 20),
-    mode:  $("s-mode").value,
+    mode:  $("s-mode").value,            // "time" | "questions" | "worksheet"
     limit: clamp(+$("s-limit").value, 5, 600),
-    worksheet: isQ && $("s-worksheet").checked,
   };
   const seed = Math.floor(Math.random() * 2 ** 31);
   // same engine as multiplayer, just with a locally-built round (no Firebase)
@@ -228,13 +223,10 @@ function renderLobby(data, players, ids) {
     $("set-mode").value = s.mode;
     $("set-limit").value = s.limit;
     $("set-players").value = s.maxPlayers || 2;
-    $("set-worksheet").checked = !!s.worksheet;
   }
   $("limit-label").textContent = s.mode === "time" ? "Seconds" : "# Questions";
   ["set-maxA", "set-maxB", "set-mode", "set-limit", "set-players"]
     .forEach(k => $(k).disabled = !me.isHost);
-  // worksheet only makes sense with a fixed question count
-  $("set-worksheet").disabled = !me.isHost || s.mode !== "questions";
 
   const maxP = s.maxPlayers || 2;
   const meReady = !!players[me.id]?.ready;
@@ -266,17 +258,15 @@ function pill(who, on) {
 }
 
 // host edits settings → write to DB
-["set-maxA", "set-maxB", "set-mode", "set-limit", "set-players", "set-worksheet"].forEach(k => {
+["set-maxA", "set-maxB", "set-mode", "set-limit", "set-players"].forEach(k => {
   $(k).onchange = () => {
     if (!me.isHost) return;
-    const isQ = $("set-mode").value === "questions";
     const settings = {
       maxA:       clamp(+$("set-maxA").value, 1, 20),
       maxB:       clamp(+$("set-maxB").value, 1, 20),
-      mode:       $("set-mode").value,
+      mode:       $("set-mode").value,        // "time" | "questions" | "worksheet"
       limit:      clamp(+$("set-limit").value, 5, 600),
       maxPlayers: clamp(+$("set-players").value, 2, 6),
-      worksheet:  isQ && $("set-worksheet").checked,   // only valid with a fixed # of questions
     };
     update(ref(db, `rooms/${me.code}/settings`), settings);
   };
@@ -311,7 +301,9 @@ function startRound(data) {
   phase = "playing";
   const s = data.settings;
   currentSettings = s;
-  const count = s.mode === "questions" ? s.limit : TIME_POOL;
+  // both "questions" and "worksheet" use a fixed count; "time" uses a big pool
+  const fixedCount = s.mode === "questions" || s.mode === "worksheet";
+  const count = fixedCount ? s.limit : TIME_POOL;
   questions = buildQuestions(data.seed, count, s.maxA, s.maxB);
   qIndex = 0; correct = 0; attempted = 0; answers = [];
 
@@ -321,8 +313,7 @@ function startRound(data) {
   $("hud-progress-label").textContent = s.mode === "questions" ? "Question" : "Answered";
   $("hud-time-label").textContent = "Time";
 
-  const worksheet = s.mode === "questions" && s.worksheet;
-  runCountdown(() => worksheet ? beginWorksheet(s) : beginPlay(s));
+  runCountdown(() => s.mode === "worksheet" ? beginWorksheet(s) : beginPlay(s));
 }
 
 function runCountdown(then) {

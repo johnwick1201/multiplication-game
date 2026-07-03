@@ -53,15 +53,12 @@
           <select id="s-mode">
             <option value="time">Timed</option>
             <option value="questions">Question limit</option>
+            <option value="worksheet">Worksheet</option>
           </select>
         </div>
         <div class="setting">
           <span id="s-limit-label">Seconds</span>
           <input id="s-limit" type="number" min="5" max="600" value="60" />
-        </div>
-        <div class="setting">
-          <span>Worksheet mode</span>
-          <input id="s-worksheet" type="checkbox" disabled />
         </div>
       </fieldset>
 
@@ -120,6 +117,7 @@
           <select id="set-mode">
             <option value="time">Timed</option>
             <option value="questions">Question limit</option>
+            <option value="worksheet">Worksheet</option>
           </select>
         </div>
 
@@ -127,11 +125,7 @@
           <span id="limit-label">Seconds</span>
           <input id="set-limit" type="number" min="5" max="600" value="60" />
         </div>
-        <div class="setting">
-          <span>Worksheet mode</span>
-          <input id="set-worksheet" type="checkbox" disabled />
-        </div>
-        <p class="hint host-only">Only the host can change settings. Worksheet mode needs "Question limit".</p>
+        <p class="hint host-only">Only the host can change settings.</p>
       </fieldset>
 
       <div class="ready-summary" id="ready-summary"></div>
