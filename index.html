@@ -59,12 +59,36 @@
           <span id="s-limit-label">Seconds</span>
           <input id="s-limit" type="number" min="5" max="600" value="60" />
         </div>
+        <div class="setting">
+          <span>Worksheet mode</span>
+          <input id="s-worksheet" type="checkbox" disabled />
+        </div>
       </fieldset>
 
       <div class="row">
         <button id="btn-solo-start" class="primary">Start</button>
       </div>
       <button id="btn-solo-back" class="link">Back</button>
+    </section>
+
+    <!-- ── WORKSHEET ───────────────────────────────────────── -->
+    <section id="screen-worksheet" class="screen">
+      <div class="sheet">
+        <div class="sheet-head">
+          <div class="sheet-title">Multiplication Worksheet</div>
+          <div class="sheet-meta">
+            <span>Name: <b id="ws-name">—</b></span>
+            <span>Time: <b id="ws-time">0.0</b>s</span>
+          </div>
+        </div>
+        <div class="sheet-rule"></div>
+        <p class="sheet-instr">Fill in every blank, then turn it in.</p>
+        <div id="ws-problems" class="ws-problems"></div>
+      </div>
+      <div class="row">
+        <button id="ws-submit" class="primary">Turn in worksheet</button>
+      </div>
+      <p id="ws-waiting" class="hint" hidden>Turned in! Waiting for the others to finish…</p>
     </section>
 
     <!-- ── LOBBY ───────────────────────────────────────────── -->
@@ -103,7 +127,11 @@
           <span id="limit-label">Seconds</span>
           <input id="set-limit" type="number" min="5" max="600" value="60" />
         </div>
-        <p class="hint host-only">Only the host can change settings.</p>
+        <div class="setting">
+          <span>Worksheet mode</span>
+          <input id="set-worksheet" type="checkbox" disabled />
+        </div>
+        <p class="hint host-only">Only the host can change settings. Worksheet mode needs "Question limit".</p>
       </fieldset>
 
       <div class="ready-summary" id="ready-summary"></div>

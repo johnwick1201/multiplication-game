@@ -85,6 +85,8 @@ Google Auth and tighten `.read`/`.write` to `auth != null`.
 - **Synced timers:** clients read Firebase's `serverTimeOffset` to correct for
   clock differences, so both countdowns agree.
 - **Two modes:** *Timed* (race the clock) or *Question limit* (first to N).
+- **Worksheet mode** (toggle, question-limit only): shows every problem at once
+  on a printed-worksheet-style sheet; fill them all in and turn it in to be graded.
 - **Winner:** most correct; ties broken by faster time.
 
 ## Tweak points

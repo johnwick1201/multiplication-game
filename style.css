@@ -119,6 +119,7 @@ fieldset { border: 1px solid var(--border); border-radius: var(--radius); paddin
 legend { padding: 0 8px; color: var(--muted); }
 .setting { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 10px 0; }
 .setting input, .setting select { width: 120px; margin: 0; }
+.setting input[type=checkbox] { width: auto; height: 20px; accent-color: var(--accent); }
 .host-only.hidden { display: none; }
 
 /* centered on screen with large type */
@@ -166,6 +167,46 @@ kbd { background: var(--panel); border: 1px solid var(--border); border-radius: 
 }
 .finish-sub { font-size: 1.5rem; color: var(--muted); margin-top: 14px; }
 
+/* ── worksheet mode: looks like a printed math worksheet ── */
+.sheet {
+  background: #f6f1e3;
+  color: #1a1712;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  border-radius: 6px;
+  padding: 30px 30px 34px;
+  margin: 8px 0 22px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .55);
+}
+.sheet-head { text-align: center; }
+.sheet-title { font-size: 1.8rem; font-weight: 700; letter-spacing: .3px; }
+.sheet-meta { display: flex; justify-content: space-between; margin-top: 12px; font-size: 1rem; }
+.sheet-rule { height: 2px; background: #1a1712; opacity: .85; margin: 12px 0 0; }
+.sheet-instr { font-style: italic; color: #5c554a; margin: 10px 0 4px; font-size: .95rem; }
+.ws-problems {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 32px;
+  margin-top: 16px;
+}
+.ws-problem { display: flex; align-items: baseline; gap: 8px; font-size: 1.3rem; }
+.ws-num { color: #8a8172; min-width: 2em; text-align: right; }
+.ws-eq { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sheet .ws-input {
+  width: 66px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #1a1712;
+  border-radius: 0;
+  font: inherit;
+  font-size: 1.25rem;
+  color: #14304f;
+  text-align: center;
+  padding: 1px 4px;
+  margin: 0;
+}
+.sheet .ws-input:focus { outline: none; border-bottom-color: #0a58ca; background: rgba(10, 88, 202, .07); }
+.sheet .ws-input:disabled { color: #14304f; opacity: 1; }
+
 /* results */
 .results { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
 .result-card {
@@ -209,6 +250,9 @@ kbd { background: var(--panel); border: 1px solid var(--border); border-radius: 
   .finish-sub { font-size: 1.2rem; }
   .credit { font-size: 1rem; }
   .qtable th, .qtable td { padding: 7px 6px; font-size: .92rem; }
+  .sheet { padding: 22px 18px 26px; }
+  .ws-problems { grid-template-columns: 1fr; gap: 14px; }
+  .sheet-title { font-size: 1.5rem; }
 }
 
 .credit {

@@ -143,17 +143,22 @@ $("btn-solo").onclick = () => {
 };
 $("btn-solo-back").onclick = () => goHome();
 $("s-mode").onchange = () => {
-  $("s-limit-label").textContent = $("s-mode").value === "time" ? "Seconds" : "# Questions";
+  const isQ = $("s-mode").value === "questions";
+  $("s-limit-label").textContent = isQ ? "# Questions" : "Seconds";
+  $("s-worksheet").disabled = !isQ;
+  if (!isQ) $("s-worksheet").checked = false;
 };
 $("btn-solo-start").onclick = () => startSolo();
 
 function startSolo() {
   me.solo = true;
+  const isQ = $("s-mode").value === "questions";
   const settings = {
     maxA:  clamp(+$("s-maxA").value, 1, 20),
     maxB:  clamp(+$("s-maxB").value, 1, 20),
     mode:  $("s-mode").value,
     limit: clamp(+$("s-limit").value, 5, 600),
+    worksheet: isQ && $("s-worksheet").checked,
   };
   const seed = Math.floor(Math.random() * 2 ** 31);
   // same engine as multiplayer, just with a locally-built round (no Firebase)
@@ -223,10 +228,13 @@ function renderLobby(data, players, ids) {
     $("set-mode").value = s.mode;
     $("set-limit").value = s.limit;
     $("set-players").value = s.maxPlayers || 2;
+    $("set-worksheet").checked = !!s.worksheet;
   }
   $("limit-label").textContent = s.mode === "time" ? "Seconds" : "# Questions";
   ["set-maxA", "set-maxB", "set-mode", "set-limit", "set-players"]
     .forEach(k => $(k).disabled = !me.isHost);
+  // worksheet only makes sense with a fixed question count
+  $("set-worksheet").disabled = !me.isHost || s.mode !== "questions";
 
   const maxP = s.maxPlayers || 2;
   const meReady = !!players[me.id]?.ready;
@@ -258,15 +266,17 @@ function pill(who, on) {
 }
 
 // host edits settings → write to DB
-["set-maxA", "set-maxB", "set-mode", "set-limit", "set-players"].forEach(k => {
+["set-maxA", "set-maxB", "set-mode", "set-limit", "set-players", "set-worksheet"].forEach(k => {
   $(k).onchange = () => {
     if (!me.isHost) return;
+    const isQ = $("set-mode").value === "questions";
     const settings = {
       maxA:       clamp(+$("set-maxA").value, 1, 20),
       maxB:       clamp(+$("set-maxB").value, 1, 20),
       mode:       $("set-mode").value,
       limit:      clamp(+$("set-limit").value, 5, 600),
       maxPlayers: clamp(+$("set-players").value, 2, 6),
+      worksheet:  isQ && $("set-worksheet").checked,   // only valid with a fixed # of questions
     };
     update(ref(db, `rooms/${me.code}/settings`), settings);
   };
@@ -311,7 +321,8 @@ function startRound(data) {
   $("hud-progress-label").textContent = s.mode === "questions" ? "Question" : "Answered";
   $("hud-time-label").textContent = "Time";
 
-  runCountdown(() => beginPlay(s));
+  const worksheet = s.mode === "questions" && s.worksheet;
+  runCountdown(() => worksheet ? beginWorksheet(s) : beginPlay(s));
 }
 
 function runCountdown(then) {
@@ -386,11 +397,24 @@ $("answer-form").addEventListener("submit", e => {
 });
 
 // ── FINISH ───────────────────────────────────────────────────
+function stopTimer() { if (tickTimer) { clearInterval(tickTimer); tickTimer = null; } }
+
+// Send/show the final stats. Shared by single-question and worksheet modes.
+async function submitScore() {
+  const timeMs = Math.max(0, Math.round(serverNow() - runStartAt));
+  const stats = { correct, attempted, timeMs, answers };
+  if (me.solo) {                     // no room to write to — show results now
+    showResults({ [me.id]: { name: me.name, stats } }, [me.id], currentSettings);
+    return;
+  }
+  await update(ref(db, `rooms/${me.code}/players/${me.id}`), { done: true, stats });
+  // showResults fires from the room listener once everyone is done
+}
+
+// single-question mode finish
 async function finishRound() {
   if (phase !== "playing") return;   // guard against double-fire
-  if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
-  const timeMs = Math.max(0, Math.round(serverNow() - runStartAt));
-
+  stopTimer();
   // lock all further input and show a big, clear "finished" banner
   $("answer").disabled = true;
   $("submit-answer").disabled = true;
@@ -398,18 +422,57 @@ async function finishRound() {
   $("play-area").hidden = true;
   $("finish-big").textContent = currentSettings.mode === "time" ? "⏱ Time's up!" : "✓ All done!";
   $("finish-banner").hidden = false;
-
-  const stats = { correct, attempted, timeMs, answers };
-
-  // Solo: no room to write to — show results immediately.
-  if (me.solo) {
-    showResults({ [me.id]: { name: me.name, stats } }, [me.id], currentSettings);
-    return;
-  }
-
-  await update(ref(db, `rooms/${me.code}/players/${me.id}`), { done: true, stats });
-  // showResults will fire from the room listener once both are done
+  await submitScore();
 }
+
+// ── WORKSHEET MODE ───────────────────────────────────────────
+function beginWorksheet(s) {
+  show("worksheet");
+  $("ws-name").textContent = me.name || "Player";
+  $("ws-waiting").hidden = true;
+  $("ws-submit").disabled = false;
+  $("ws-problems").innerHTML = questions.map((q, i) =>
+    `<div class="ws-problem">
+       <span class="ws-num">${i + 1}.</span>
+       <span class="ws-eq">${q.a} × ${q.b} =</span>
+       <input id="ws-ans-${i}" class="ws-input" type="number" inputmode="numeric" autocomplete="off" />
+     </div>`).join("");
+  const first = document.getElementById("ws-ans-0");
+  if (first) first.focus();
+
+  stopTimer();
+  const tick = () => { $("ws-time").textContent = ((serverNow() - runStartAt) / 1000).toFixed(1); };
+  tick();
+  tickTimer = setInterval(tick, 100);
+}
+
+async function gradeWorksheet() {
+  if (phase !== "playing") return;
+  stopTimer();
+  correct = 0; attempted = questions.length; answers = [];   // graded out of every problem
+  questions.forEach((q, i) => {
+    const raw = (document.getElementById("ws-ans-" + i)?.value || "").trim();
+    const given = raw === "" ? null : +raw;
+    const ok = given !== null && given === q.a * q.b;
+    if (ok) correct++;
+    answers.push({ a: q.a, b: q.b, given, ok });
+  });
+  document.querySelectorAll(".ws-input").forEach(el => el.disabled = true);   // lock the sheet
+  $("ws-submit").disabled = true;
+  $("ws-waiting").hidden = false;
+  await submitScore();
+}
+
+$("ws-submit").onclick = () => gradeWorksheet();
+// Enter jumps to the next blank; Enter on the last blank turns the sheet in.
+$("ws-problems").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const inputs = Array.from(document.querySelectorAll(".ws-input"));
+  const i = inputs.indexOf(document.activeElement);
+  if (i >= 0 && i < inputs.length - 1) inputs[i + 1].focus();
+  else gradeWorksheet();
+});
 
 // ── RESULTS ──────────────────────────────────────────────────
 function showResults(players, ids, settings) {
@@ -455,7 +518,8 @@ function showResults(players, ids, settings) {
     const cell = ans => {
       if (!ans) return `<td class="miss">—</td>`;
       if (ans.ok) return `<td class="ok">${ans.given}</td>`;
-      return `<td class="no">${ans.given}<span class="corr">${ans.a * ans.b}</span></td>`;
+      const shown = ans.given == null ? "—" : ans.given;   // blank worksheet answer
+      return `<td class="no">${shown}<span class="corr">${ans.a * ans.b}</span></td>`;
     };
     let body = "";
     for (let i = 0; i < n; i++) {
